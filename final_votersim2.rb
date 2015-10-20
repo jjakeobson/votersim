@@ -1,4 +1,4 @@
-#Version 04
+#Version 06 JRD1019 added tie handling
 class World_Ui
   attr_reader :world
   #this class interacts with the user and calls the methods of the
@@ -29,9 +29,15 @@ class World_Ui
         return false
       end
     when "l"
-      puts "Here is your requested list:"
-      world.list("")
-      return false
+      if world.voters.any? || world.politicians.any?
+        puts "Here is your requested list:"
+        world.list("")
+        puts "--- End of list ---"
+        return false
+      else
+        puts "--- No Entries Found ---"
+        return false
+    end
     when "u"
       type = get_answer("Who would you like to update?", "(P)oliticians or (V)oters",["v", "p"])
       world.list(type)
@@ -249,6 +255,22 @@ class World
       #sort the politicians into arrays of democrats and republicans
       democrats = []
       republicans = []
+
+      #test for edge cases, no characters or not enough
+      if @politicians == []
+        puts
+        puts "!!!!!!!!!! No Politicians Have Been Created (Is this bad??) !!!!!!!!"
+        return false
+      elsif @politicians.length == 1
+        puts
+        puts "!!!!!!!!! Only 1 Candidate? Is this some sort of bananna republic? !!!!!"
+        return false
+      elsif @voters == []
+        puts
+        puts "!!!!!!!!! We think creating some voters will be helpful!  !!!!!!!!!!!!"
+        return false
+      end
+
       @politicians.each do |candidate|
         candidate.votes = 0                   #clear the vote count
         if candidate.party == "d"
@@ -262,6 +284,8 @@ class World
       num_dem = democrats.length
       num_rep = republicans.length
 
+
+
       #for each voter simulate voting and record the total in the politician object
       @voters.each do |voter|
         if rand(1..100) <= vote_prob[voter.politics]
@@ -270,46 +294,44 @@ class World
           republicans[rand(0..(num_rep - 1))].votes += 1 #otherwise vote goes to random rep
         end
       end
-      total_votes = {}
-      total_votes.clear                      #remove any old results
+      @total_votes.clear                      #remove any old results
       puts "Election Results:"
       puts
 
-      @politicians.each do |candidate|        #generate hash and politician votes
+      @politicians.each do |candidate|        #generate hash of politician votes
         candidate.votes += 1                  #cadidates always vote for themselves
-        total_votes[candidate.name] = candidate.votes
+        @total_votes[candidate.name] = candidate.votes
         puts "#{candidate.name} has #{candidate.votes} votes."
       end
 
-      vote_tally = []
-      winner = ""
-      tie = ""
-      tie_votes = 0
-      max_votes = 0
-      total_votes.each_pair do |candidate, votes|
-        if votes > max_votes
-          winner = candidate.upcase
-          max_votes = votes
-        elsif votes = max_votes
-          tie = candidate.upcase
-          tie_votes = votes
-        end
+      #sort the hash into an array of arrays [[k,v],[k,v],,]
+      #and reverse the order so the highest value is in [0]
+      vote_result = @total_votes.sort_by {|k,v| v }
+      vote_result.reverse!
+      # p vote_result
 
+      if vote_result[0][1] == vote_result[1][1]   #this is a tie
+        puts
+        puts
+        puts "=============================================="
+        puts "=============================================="
+        puts "===="
+        puts "==== THERE HAS BEEN A TIE BETWEEN #{vote_result[0][0]}"
+        puts "==== AND #{vote_result[1][0]}!! WHAT ARE THE ODDS??"
+        puts "==== WE SHOULD KNOW STUFF LIKE THAT."
+        puts "==== "
+        puts "=============================================="
+        puts "=============================================="
+      else
+        puts
+        puts "=============================================="
+        puts "=============================================="
+        puts "====                                      "
+        puts "==== AND THE WINNER IS #{vote_result[0][0]}!!!!"
+        puts "====                                      "
+        puts "=============================================="
+        puts "=============================================="
       end
-      puts
-      puts "=============================================="
-      puts "=============================================="
-      puts "====                                      ==== "
-      puts "==== AND THE WINNER IS #{winner}!!!!"
-      puts "====                                      ===="
-      puts "=============================================="
-      puts "=============================================="
-
-      # if max_votes = tie_votes
-      #   puts "THERE HAS BEEN A TIE BETWEEN #{winner} AND #{tie}!! WHAT ARE THE ODDS, seriously though... "
-      # else
-      #   puts "AND THE WINNER IS #{winner}!!!!"
-      # end
     end
 
     def find(name) #JRD1018 original version
@@ -348,10 +370,16 @@ your choice from the menu below, and happy simulating!!!
 EOP
 my_world = World.new
 my_worldUi = World_Ui.new(my_world)
-my_world.testdata
+
+# my_world.testdata     #uncomment this to read in external list of voters
+
+#Until my world ends true keep calling the main menu,
+#avoids recursion which is the work of the devil.
 until my_worldUi.main_menu
 end
 
+
+#some tests
 # p my_world.find("Lacy Jerabek")
 # p my_world.find("jim disser")
 # p my_world.find("Donald Trump")
