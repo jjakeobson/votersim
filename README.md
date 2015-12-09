@@ -1,7 +1,6 @@
 VOTER SIMULATOR
 -------------------
-Voter Sim
-Voter Simulation Project Wyncode Week 2
+Voter Simulation Project Wyncode Week 2 <br>
 Create a REPL-driven voting simulation program.
 
 Overview
