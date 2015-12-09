@@ -1,9 +1,6 @@
-VOTER SIMULATOR
--------------------
 #Voter Simulation Project Wyncode Week 2 <br>
-Create a REPL-driven voting simulation program.<br>
+Create a REPL-driven voting simulation program.<br><br>
 
-#Overview<br><br>
 A user should be able to create politicians and voters, then run an election simulation. Each voter votes for one politician according to the politician’s political party and the voter’s politicial affiliation.
 
 Once all the characters in the simulation are in place, run an election by allowing each voter to cast a vote. Then tally all the votes and declare a winner.<br><br>
